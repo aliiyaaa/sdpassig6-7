@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Station Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .weather-display {
+            text-align: center;
+        }
+
+        .weather-icon {
+            font-size: 4em;
+            margin: 20px 0;
+        }
+
+        .temp {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-item {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timestamp {
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #888;
+            font-style: italic;
+        }
+
+        .strategy-selector {
+            margin-bottom: 15px;
+        }
+
+        .strategy-selector label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .strategy-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .strategy-selector select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .manual-input {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .observer-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .observer-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .observer-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .observer-type {
+            font-size: 1.5em;
+        }
+
+        .observer-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .observer-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .observer-type-label {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85em;
+            width: auto;
+            margin: 0;
+        }
+
+        .subscribe-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .subscribe-form select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            padding: 20px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌤️ Weather Station Dashboard</h1>
+         
+        </div>
+
+        <div class="dashboard">
+            <div class="card weather-display">
+                <h2>Current Weather</h2>
+                <div id="weather-content">
+                    <div class="loading pulse">Loading weather data...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Update Strategy</h2>
+                <div class="strategy-selector">
+                    <label for="strategy-select">Select Update Strategy:</label>
+                    <select id="strategy-select">
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div id="strategy-status"></div>
+            </div>
+
+            <div class="card">
+                <h2>Trigger Update</h2>
+                <button class="btn btn-success" id="trigger-btn">🔄 Trigger Weather Update</button>
+                <div id="trigger-status"></div>
+            </div>
+
+            <div class="card">
+                <h2>Manual Input</h2>
+                <div class="manual-input">
+                    <div class="input-group">
+                        <label for="temp-input">Temperature (°C)</label>
+                        <input type="number" id="temp-input" step="0.1" placeholder="e.g., 22.5">
+                    </div>
+                    <div class="input-group">
+                        <label for="humidity-input">Humidity (%)</label>
+                        <input type="number" id="humidity-input" step="0.1" placeholder="e.g., 65.0">
+                    </div>
+                    <div class="input-group">
+                        <label for="wind-input">Wind Speed (kph)</label>
+                        <input type="number" id="wind-input" step="0.1" placeholder="e.g., 15.0">
+                    </div>
+                    <button class="btn btn-secondary" id="manual-btn">📝 Submit Manual Data</button>
+                </div>
+                <div id="manual-status"></div>
+            </div>
+
+            <div class="card">
+                <h2>Observers</h2>
+                <div class="subscribe-form">
+                    <input type="text" id="observer-id" placeholder="Observer ID (e.g., phone1)">
+                    <select id="observer-type">
+                        <option value="PHONE">📱 Phone</option>
+                        <option value="WEBAPP">🌐 Web App</option>
+                        <option value="OUTDOOR">🏢 Outdoor</option>
+                    </select>
+                </div>
+                <button class="btn" id="subscribe-btn">➕ Subscribe Observer</button>
+                <div id="subscribe-status"></div>
+                <div class="observer-list" id="observer-list">
+                    <div class="loading pulse">Loading observers...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api/weather';
+
+        function showStatus(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${isError ? 'error' : 'success'}`;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 3000);
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return 'N/A';
+            const date = new Date(timestamp);
+            return date.toLocaleString();
+        }
+
+        function getWeatherIcon(temp) {
+            if (temp < 0) return '❄️';
+            if (temp < 15) return '🌧️';
+            if (temp < 25) return '⛅';
+            return '☀️';
+        }
+
+        async function loadWeather() {
+            try {
+                const response = await fetch(`${API_BASE}/current`);
+                const data = await response.json();
+                const content = document.getElementById('weather-content');
+
+                if (data.message) {
+                    content.innerHTML = `<div class="no-data">${data.message}</div>`;
+                    return;
+                }
+
+                const icon = getWeatherIcon(data.temperatureCelsius);
+                content.innerHTML = `
+                    <div class="weather-icon">${icon}</div>
+                    <div class="temp">${data.temperatureCelsius.toFixed(1)}°C</div>
+                    <div class="weather-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Humidity</div>
+                            <div class="detail-value">${data.humidityPercent.toFixed(1)}%</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Wind Speed</div>
+                            <div class="detail-value">${data.windKph.toFixed(1)} kph</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Status</div>
+                            <div class="detail-value">Updated</div>
+                        </div>
+                    </div>
+                    <div class="timestamp">Last updated: ${formatTimestamp(data.observedAt)}</div>
+                `;
+            } catch (error) {
+                document.getElementById('weather-content').innerHTML = 
+                    `<div class="no-data">Error loading weather data</div>`;
+            }
+        }
+
+        async function loadStrategy() {
+            try {
+                const response = await fetch(`${API_BASE}/strategy`);
+                const data = await response.json();
+                const select = document.getElementById('strategy-select');
+                
+                const strategies = data.available.split(',');
+                select.innerHTML = '';
+                strategies.forEach(strategy => {
+                    const option = document.createElement('option');
+                    option.value = strategy;
+                    option.textContent = strategy;
+                    if (strategy === data.current) {
+                        option.selected = true;
+                    }
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading strategy:', error);
+            }
+        }
+
+        document.getElementById('strategy-select').addEventListener('change', async (e) => {
+            const strategy = e.target.value;
+            if (!strategy) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/strategy/${strategy}`, {
+                    method: 'PUT'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showStatus('strategy-status', data.message, false);
+                } else {
+                    showStatus('strategy-status', data.error || 'Failed to change strategy', true);
+                    await loadStrategy();
+                }
+            } catch (error) {
+                showStatus('strategy-status', 'Error changing strategy', true);
+                await loadStrategy();
+            }
+        });
+
+        document.getElementById('trigger-btn').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/update`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showStatus('trigger-status', 'Weather update triggered successfully!', false);
+                    await loadWeather();
+                } else {
+                    showStatus('trigger-status', data.error || 'Failed to trigger update', true);
+                }
+            } catch (error) {
+                showStatus('trigger-status', 'Error triggering update', true);
+            }
+        });
+
+        document.getElementById('manual-btn').addEventListener('click', async () => {
+            const temp = parseFloat(document.getElementById('temp-input').value);
+            const humidity = parseFloat(document.getElementById('humidity-input').value);
+            const wind = parseFloat(document.getElementById('wind-input').value);
+
+            if (isNaN(temp) || isNaN(humidity) || isNaN(wind)) {
+                showStatus('manual-status', 'Please fill in all fields with valid numbers', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/update/manual`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        temperatureCelsius: temp,
+                        humidityPercent: humidity,
+                        windKph: wind
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showStatus('manual-status', 'Manual data submitted successfully!', false);
+                    document.getElementById('temp-input').value = '';
+                    document.getElementById('humidity-input').value = '';
+                    document.getElementById('wind-input').value = '';
+                    await loadWeather();
+                } else {
+                    showStatus('manual-status', data.error || 'Failed to submit manual data', true);
+                }
+            } catch (error) {
+                showStatus('manual-status', 'Error submitting manual data', true);
+            }
+        });
+
+        async function loadObservers() {
+            try {
+                const response = await fetch(`${API_BASE}/observers`);
+                const data = await response.json();
+                const list = document.getElementById('observer-list');
+
+                if (data.observers.length === 0) {
+                    list.innerHTML = '<div class="no-data">No observers subscribed</div>';
+                    return;
+                }
+
+                list.innerHTML = data.observers.map(obs => {
+                    const typeIcon = {
+                        'PhoneDisplay': '📱',
+                        'WebAppDisplay': '🌐',
+                        'OutdoorDisplay': '🏢'
+                    }[obs.type] || '👁️';
+
+                    return `
+                        <div class="observer-item">
+                            <div class="observer-info">
+                                <div class="observer-type">${typeIcon}</div>
+                                <div class="observer-details">
+                                    <div class="observer-id">${obs.id}</div>
+                                    <div class="observer-type-label">${obs.type}</div>
+                                </div>
+                            </div>
+                            <button class="btn btn-small btn-secondary" onclick="unsubscribeObserver('${obs.id}')">
+                                Remove
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                document.getElementById('observer-list').innerHTML = 
+                    '<div class="no-data">Error loading observers</div>';
+            }
+        }
+
+        document.getElementById('subscribe-btn').addEventListener('click', async () => {
+            const id = document.getElementById('observer-id').value.trim();
+            const type = document.getElementById('observer-type').value;
+
+            if (!id) {
+                showStatus('subscribe-status', 'Please enter an observer ID', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/observers`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id, type })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showStatus('subscribe-status', data.message, false);
+                    document.getElementById('observer-id').value = '';
+                    await loadObservers();
+                } else {
+                    showStatus('subscribe-status', data.error || 'Failed to subscribe observer', true);
+                }
+            } catch (error) {
+                showStatus('subscribe-status', 'Error subscribing observer', true);
+            }
+        });
+
+        async function unsubscribeObserver(id) {
+            try {
+                const response = await fetch(`${API_BASE}/observers/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    showStatus('subscribe-status', `Observer ${id} removed successfully`, false);
+                    await loadObservers();
+                } else {
+                    showStatus('subscribe-status', 'Failed to remove observer', true);
+                }
+            } catch (error) {
+                showStatus('subscribe-status', 'Error removing observer', true);
+            }
+        }
+
+        async function init() {
+            await Promise.all([
+                loadWeather(),
+                loadStrategy(),
+                loadObservers()
+            ]);
+
+            setInterval(loadWeather, 5000);
+            setInterval(loadObservers, 3000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
+
